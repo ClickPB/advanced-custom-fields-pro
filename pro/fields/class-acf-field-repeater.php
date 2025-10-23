@@ -1,13 +1,4 @@
 <?php
-/**
- * @package ACF
- * @author  WP Engine
- *
- * © 2025 Advanced Custom Fields (ACF®). All rights reserved.
- * "ACF" is a trademark of WP Engine.
- * Licensed under the GNU General Public License v2 or later.
- * https://www.gnu.org/licenses/gpl-2.0.html
- */
 
 if ( ! class_exists( 'acf_field_repeater' ) ) :
 
@@ -144,10 +135,8 @@ if ( ! class_exists( 'acf_field_repeater' ) ) :
 		 * @param array $field An array holding all the field's data.
 		 */
 		public function render_field( $field ) {
-			$_field              = $field;
 			$field['orig_name']  = $this->get_field_name_from_input_name( $field['name'] );
-			$_field['name']      = $field['orig_name'];
-			$field['total_rows'] = (int) acf_get_metadata_by_field( $this->post_id, $_field );
+			$field['total_rows'] = (int) acf_get_metadata( $this->post_id, $field['orig_name'] );
 			$table               = new ACF_Repeater_Table( $field );
 			$table->render();
 		}
@@ -614,7 +603,7 @@ if ( ! class_exists( 'acf_field_repeater' ) ) :
 			}
 
 			$new_value = 0;
-			$old_value = (int) acf_get_metadata_by_field( $post_id, $field );
+			$old_value = (int) acf_get_metadata( $post_id, $field['name'] );
 
 			if ( ! empty( $field['pagination'] ) && did_action( 'acf/save_post' ) && ! isset( $_POST['_acf_form'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Value not used.
 				$old_rows       = acf_get_value( $post_id, $field );
@@ -782,7 +771,7 @@ if ( ! class_exists( 'acf_field_repeater' ) ) :
 		 */
 		function delete_value( $post_id, $key, $field ) {
 			// Get the old value from the database.
-			$old_value = (int) acf_get_metadata_by_field( $post_id, $field );
+			$old_value = (int) acf_get_metadata( $post_id, $field['name'] );
 
 			// Bail early if no rows or no subfields.
 			if ( ! $old_value || empty( $field['sub_fields'] ) ) {
@@ -1015,55 +1004,24 @@ if ( ! class_exists( 'acf_field_repeater' ) ) :
 			$name_parts = array();
 
 			foreach ( $field_keys as $field_key ) {
-				// Preserve acfcloneindex
-				if ( $field_key === 'acfcloneindex' ) {
-					$name_parts[] = 'acfcloneindex';
-					continue;
-				}
+				if ( ! acf_is_field_key( $field_key ) ) {
+					if ( 'acfcloneindex' === $field_key ) {
+						$name_parts[] = 'acfcloneindex';
+						continue;
+					}
 
-				// Handle row numbers (row-0, row-1, etc.)
-				if ( strpos( $field_key, 'row-' ) === 0 ) {
-					$row_num = substr( $field_key, 4 );
+					$row_num = str_replace( 'row-', '', $field_key );
 					if ( is_numeric( $row_num ) ) {
 						$name_parts[] = (int) $row_num;
 						continue;
 					}
 				}
 
-				// Handle compound keys (field_..._field_...)
-				$compound_keys = preg_split( '/_field_/', $field_key );
-				if ( count( $compound_keys ) > 1 ) {
-					foreach ( $compound_keys as $i => $sub_key ) {
-						if ( $i > 0 ) {
-							$sub_key = 'field_' . $sub_key;
-						}
+				$field = acf_get_field( $field_key );
 
-						// Seamless clone fields use compound keys which can be skipped.
-						$field = acf_get_field( $sub_key );
-						if ( $field && 'clone' === $field['type'] && 'seamless' === $field['display'] ) {
-							continue;
-						}
-
-						$name_parts[] = $field && ! empty( $field['name'] ) ? $field['name'] : $sub_key;
-					}
-					continue;
+				if ( $field ) {
+					$name_parts[] = $field['name'];
 				}
-
-				// Handle standard field keys
-				if ( strpos( $field_key, 'field_' ) === 0 ) {
-
-					// Skip clone fields with prefix_name disabled.
-					$field = acf_get_field( $field_key );
-					if ( $field && $field['type'] === 'clone' && empty( $field['prefix_name'] ) ) {
-						continue;
-					}
-
-					$name_parts[] = $field && ! empty( $field['name'] ) ? $field['name'] : $field_key;
-					continue;
-				}
-
-				// Fallback: just add as is
-				$name_parts[] = $field_key;
 			}
 
 			return implode( '_', $name_parts );
@@ -1081,7 +1039,6 @@ if ( ! class_exists( 'acf_field_repeater' ) ) :
 				array(
 					'field_name'    => '',
 					'field_key'     => '',
-					'field_prefix'  => '',
 					'post_id'       => 0,
 					'rows_per_page' => 0,
 					'refresh'       => false,
@@ -1121,21 +1078,19 @@ if ( ! class_exists( 'acf_field_repeater' ) ) :
 			}
 
 			/**
-			 * We have to swap out the field name and prefix with the ones sent via JS,
+			 * We have to swap out the field name with the one sent via JS,
 			 * as the repeater could be inside a subfield.
 			 */
-			$field['name']   = $args['field_name'];
-			$field['prefix'] = $args['field_prefix'];
-			$field['value']  = acf_get_value( $post_id, $field );
+			$field['name'] = $args['field_name'];
 
-			if ( $args['refresh'] ) {
-				$response['total_rows'] = (int) acf_get_metadata_by_field( $post_id, $field );
-			}
-
-			// Render the rows to be sent back via AJAX.
+			$field['value']   = acf_get_value( $post_id, $field );
 			$field            = acf_prepare_field( $field );
 			$repeater_table   = new ACF_Repeater_Table( $field );
 			$response['rows'] = $repeater_table->rows( true );
+
+			if ( $args['refresh'] ) {
+				$response['total_rows'] = (int) acf_get_metadata( $post_id, $args['field_name'] );
+			}
 
 			wp_send_json_success( $response );
 		}

@@ -1,13 +1,4 @@
 <?php
-/**
- * @package ACF
- * @author  WP Engine
- *
- * © 2025 Advanced Custom Fields (ACF®). All rights reserved.
- * "ACF" is a trademark of WP Engine.
- * Licensed under the GNU General Public License v2 or later.
- * https://www.gnu.org/licenses/gpl-2.0.html
- */
 
 if ( ! class_exists( 'acf_field_button_group' ) ) :
 
@@ -75,45 +66,27 @@ if ( ! class_exists( 'acf_field_button_group' ) ) :
 
 				// append
 				$buttons[] = array(
-					'name'         => $field['name'],
-					'value'        => $_value,
-					'label'        => $_label,
-					'checked'      => $checked,
-					'button_group' => true,
+					'name'    => $field['name'],
+					'value'   => $_value,
+					'label'   => $_label,
+					'checked' => $checked,
 				);
 			}
-
 
 			// maybe select initial value
 			if ( ! $field['allow_null'] && $selected === null ) {
 				$buttons[0]['checked'] = true;
 			}
 
-			// Ensure roving tabindex when allow_null is enabled and no selection yet.
-			if ( $field['allow_null'] && $selected === null && ! empty( $buttons ) ) {
-				$buttons[0]['tabindex'] = '0';
-			}
-
 			// div
-			$div = array(
-				'class' => 'acf-button-group',
-				'role'  => 'radiogroup',
-			);
+			$div = array( 'class' => 'acf-button-group' );
 
-			// Add aria-labelledby if field has an ID for proper screen reader announcement
-			if ( ! empty( $field['id'] ) ) {
-				$div['aria-labelledby'] = $field['id'] . '-label';
-			}
-
-			if ( 'vertical' === $field['layout'] ) {
-				$div['class'] .= ' -vertical';
-			}
+			if ( $field['layout'] == 'vertical' ) {
+				$div['class'] .= ' -vertical'; }
 			if ( $field['class'] ) {
-				$div['class'] .= ' ' . $field['class'];
-			}
+				$div['class'] .= ' ' . $field['class']; }
 			if ( $field['allow_null'] ) {
-				$div['data-allow_null'] = 1;
-			}
+				$div['data-allow_null'] = 1; }
 
 			// hdden input
 			$html .= acf_get_hidden_input( array( 'name' => $field['name'] ) );

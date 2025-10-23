@@ -1,13 +1,4 @@
 <?php
-/**
- * @package ACF
- * @author  WP Engine
- *
- * © 2025 Advanced Custom Fields (ACF®). All rights reserved.
- * "ACF" is a trademark of WP Engine.
- * Licensed under the GNU General Public License v2 or later.
- * https://www.gnu.org/licenses/gpl-2.0.html
- */
 
 // Register store.
 acf_register_store( 'fields' )->prop( 'multisite', true );
@@ -837,12 +828,7 @@ function acf_render_field_label( $field ) {
 
 	// Output label.
 	if ( $label ) {
-		// For multi-choice fields (radio, checkbox, taxonomy, button_group), don't use 'for' attribute but add ID for aria-labelledby
-		if ( in_array( $field['type'], array( 'radio', 'checkbox', 'taxonomy', 'button_group' ), true ) && $field['id'] ) {
-			echo '<label id="' . esc_attr( $field['id'] ) . '-label">' . acf_esc_html( $label ) . '</label>';
-		} else {
-			echo '<label' . ( $field['id'] ? ' for="' . esc_attr( $field['id'] ) . '"' : '' ) . '>' . acf_esc_html( $label ) . '</label>';
-		}
+		echo '<label' . ( $field['id'] ? ' for="' . esc_attr( $field['id'] ) . '"' : '' ) . '>' . acf_esc_html( $label ) . '</label>';
 	}
 }
 
@@ -861,7 +847,7 @@ function acf_render_field_label( $field ) {
 function acf_get_field_label( $field, $context = '' ) {
 
 	// Get label.
-	$label = esc_html( $field['label'] );
+	$label = $field['label'];
 
 	// Display empty text when editing field.
 	if ( $context == 'admin' && $label === '' ) {

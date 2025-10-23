@@ -1,18 +1,12 @@
 <?php
 /**
- * @package ACF
- * @author  WP Engine
+ * ACF Block Bindings
  *
- * © 2025 Advanced Custom Fields (ACF®). All rights reserved.
- * "ACF" is a trademark of WP Engine.
- * Licensed under the GNU General Public License v2 or later.
- * https://www.gnu.org/licenses/gpl-2.0.html
+ * @since 6.2.8
+ * @package ACF
  */
 
 namespace ACF\Blocks;
-
-// Exit if accessed directly.
-defined( 'ABSPATH' ) || exit;
 
 /**
  * The core ACF Blocks binding class.

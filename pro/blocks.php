@@ -1,12 +1,8 @@
 <?php
 /**
- * @package ACF
- * @author  WP Engine
+ * The ACF Blocks PHP code.
  *
- * © 2025 Advanced Custom Fields (ACF®). All rights reserved.
- * "ACF" is a trademark of WP Engine.
- * Licensed under the GNU General Public License v2 or later.
- * https://www.gnu.org/licenses/gpl-2.0.html
+ * @package ACF
  */
 
 // Exit if accessed directly.
@@ -55,17 +51,6 @@ function acf_handle_json_block_registration( $settings, $metadata ) {
 		return $settings;
 	}
 
-	/**
-	 * Filters the default ACF block version for blocks registered via block.json.
-	 *
-	 * @since 6.6.0
-	 *
-	 * @param integer $default_acf_block_version The default ACF block version.
-	 * @param array   $settings                  An array of block settings.
-	 * @return integer
-	 */
-	$default_acf_block_version = apply_filters( 'acf/blocks/default_block_version', 2, $settings );
-
 	// Setup ACF defaults.
 	$settings = wp_parse_args(
 		$settings,
@@ -79,7 +64,8 @@ function acf_handle_json_block_registration( $settings, $metadata ) {
 			'uses_context'      => array(),
 			'supports'          => array(),
 			'attributes'        => array(),
-			'acf_block_version' => $default_acf_block_version,
+			'acf_block_version' => 2,
+			'api_version'       => 2,
 			'validate'          => true,
 			'validate_on_load'  => true,
 			'use_post_meta'     => false,
@@ -139,17 +125,6 @@ function acf_handle_json_block_registration( $settings, $metadata ) {
 				$settings[ $mapped_key ] = translate_settings_using_i18n_schema( $i18n_schema->$key, $settings[ $key ], $textdomain );
 			}
 		}
-	}
-
-	if ( isset( $metadata['apiVersion'] ) ) {
-		// Use the apiVersion defined in block.json if it exists.
-		$settings['api_version'] = $metadata['apiVersion'];
-	} elseif ( $settings['acf_block_version'] >= 3 && version_compare( get_bloginfo( 'version' ), '6.3', '>=' ) ) {
-		// Otherwise, if we're on WP 6.3+ and the block is ACF block version 3 or greater, use apiVersion 3.
-		$settings['api_version'] = 3;
-	} else {
-		// Otherwise, default to apiVersion 2.
-		$settings['api_version'] = 2;
 	}
 
 	// Add the block name and registration path to settings.
@@ -223,28 +198,11 @@ function acf_register_block_type( $block ) {
 
 	// Set ACF required attributes.
 	$block['attributes'] = acf_get_block_type_default_attributes( $block );
-
-	/**
-	 * Filters the default ACF block version for blocks registered via acf_register_block_type().
-	 *
-	 * @since 6.6.0
-	 *
-	 * @param integer $default_acf_block_version The default ACF block version.
-	 * @param array   $block                     An array of block settings.
-	 * @return integer
-	 */
-	$default_acf_block_version = apply_filters( 'acf/blocks/default_block_version', 1, $block );
-
-	if ( ! isset( $block['acf_block_version'] ) ) {
-		$block['acf_block_version'] = $default_acf_block_version;
-	}
-
 	if ( ! isset( $block['api_version'] ) ) {
-		if ( $block['acf_block_version'] >= 3 && version_compare( get_bloginfo( 'version' ), '6.3', '>=' ) ) {
-			$block['api_version'] = 3;
-		} else {
-			$block['api_version'] = 2;
-		}
+		$block['api_version'] = 2;
+	}
+	if ( ! isset( $block['acf_block_version'] ) ) {
+		$block['acf_block_version'] = 1;
 	}
 
 	// Add to storage.
@@ -456,16 +414,6 @@ function acf_validate_block_type( $block ) {
 		$block['supports']['jsx'] = $block['supports']['__experimental_jsx'];
 	}
 
-	// Normalize block 'parent' setting.
-	if ( array_key_exists( 'parent', $block ) ) {
-		// As of WP 6.8, parent must be an array.
-		if ( null === $block['parent'] ) {
-			unset( $block['parent'] );
-		} elseif ( is_string( $block['parent'] ) ) {
-			$block['parent'] = array( $block['parent'] );
-		}
-	}
-
 	// Return block.
 	return $block;
 }
@@ -601,13 +549,8 @@ function acf_render_block_callback( $attributes, $content = '', $wp_block = null
  * @return  string   The block HTML.
  */
 function acf_rendered_block( $attributes, $content = '', $is_preview = false, $post_id = 0, $wp_block = null, $context = false, $is_ajax_render = false ) {
-	if ( isset( $wp_block->block_type->acf_block_version ) && $wp_block->block_type->acf_block_version >= 3 ) {
-		$mode = 'preview';
-		$form = false;
-	} else {
-		$mode = isset( $attributes['mode'] ) ? $attributes['mode'] : 'auto';
-		$form = ( 'edit' === $mode && $is_preview );
-	}
+	$mode = isset( $attributes['mode'] ) ? $attributes['mode'] : 'auto';
+	$form = ( 'edit' === $mode && $is_preview );
 
 	// If context is available from the WP_Block class object and we have no context of our own, use that.
 	if ( empty( $context ) && ! empty( $wp_block->context ) ) {
@@ -663,10 +606,6 @@ function acf_rendered_block( $attributes, $content = '', $is_preview = false, $p
 			echo acf_get_empty_block_form_html( $attributes['name'] ); //phpcs:ignore -- escaped in function.
 		}
 	} else {
-		if ( $is_preview ) {
-			acf_set_data( 'acf_doing_block_preview', true );
-		}
-
 		// Capture block render output.
 		acf_render_block( $attributes, $content, $is_preview, $post_id, $wp_block, $context );
 
@@ -721,8 +660,6 @@ function acf_rendered_block( $attributes, $content = '', $is_preview = false, $p
 		$attributes['id'],
 		$block_cache
 	);
-
-	acf_set_data( 'acf_doing_block_preview', false );
 
 	// Prevent edit forms being output to rest endpoints.
 	if ( $form && acf_get_data( 'acf_inside_rest_call' ) && apply_filters( 'acf/blocks/prevent_edit_forms_on_rest_endpoints', true ) ) {
@@ -796,16 +733,12 @@ function acf_block_render_template( $block, $content, $is_preview, $post_id, $wp
 		$path = locate_template( $block['render_template'] );
 	}
 
-	do_action( 'acf/blocks/pre_block_template_render', $block, $content, $is_preview, $post_id, $wp_block, $context );
-
 	// Include template.
 	if ( file_exists( $path ) ) {
 		include $path;
 	} elseif ( $is_preview ) {
 		echo acf_esc_html( apply_filters( 'acf/blocks/template_not_found_message', '<p>' . __( 'The render template for this ACF Block was not found', 'acf' ) . '</p>' ) );
 	}
-
-	do_action( 'acf/blocks/post_block_template_render', $block, $content, $is_preview, $post_id, $wp_block, $context );
 }
 
 /**
@@ -859,7 +792,6 @@ function acf_enqueue_block_assets() {
 			'Change content alignment' => __( 'Change content alignment', 'acf' ),
 			'Error previewing block'   => __( 'An error occurred when loading the preview for this block.', 'acf' ),
 			'Error loading block form' => __( 'An error occurred when loading the block in edit mode.', 'acf' ),
-			'Edit Block'               => __( 'Edit Block', 'acf' ),
 
 			/* translators: %s: Block type title */
 			'%s settings'              => __( '%s settings', 'acf' ),
@@ -1083,15 +1015,8 @@ function acf_ajax_fetch_block() {
 		$content    = '';
 		$is_preview = true;
 
-		$registry      = WP_Block_Type_Registry::get_instance();
-		$wp_block_type = $registry->get_registered( $block['name'] );
-
-		// We need to match what gets automatically passed to acf_rendered_block by WP core.
-		$wp_block             = new stdClass();
-		$wp_block->block_type = $wp_block_type;
-
 		// Render and store HTML.
-		$response['preview'] = acf_rendered_block( $block, $content, $is_preview, $post_id, $wp_block, $context, true );
+		$response['preview'] = acf_rendered_block( $block, $content, $is_preview, $post_id, null, $context, true );
 	}
 
 	// Send response.
