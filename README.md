@@ -1,52 +1,27 @@
-# Advanced Custom Fields Pro
+# Advanced Custom Fields
 
-[![WordPress Plugin](https://img.shields.io/badge/WordPress-Plugin-blue.svg)](https://wordpress.org/plugins/advanced-custom-fields/)
-[![Requires PHP](https://img.shields.io/badge/Requires%20PHP-5.6%2B-red.svg)](https://php.net)
-[![Tested up to](https://img.shields.io/badge/Tested%20up%20to-WordPress%206.0.2-green.svg)](https://wordpress.org)
+Welcome to the official Advanced Custom Fields repository on GitHub. ACF is a WordPress plugin used to take full control of your edit screens & custom field data.
 
-Advanced Custom Fields Pro is a powerful WordPress plugin that transforms your WordPress site into a fully-fledged content management system by providing professional and intuitive custom fields.
+## Documentation
 
-## Features
+Do you need help getting started with ACF, or do you have questions about one of the ACF features? You can [search through our documentation here](https://www.advancedcustomfields.com/resources/). If you don't find the answers you're looking for, you can start a new forum thread in the [support forum](https://support.advancedcustomfields.com/) or contact our [support team](https://www.advancedcustomfields.com/contact/)
 
-- **Simple & Intuitive Interface**: Create and manage custom fields with ease
-- **Powerful Functions**: Extensive set of functions for developers
-- **30+ Field Types**: Choose from a wide variety of field types
-- **Extensive Documentation**: Comprehensive guides and resources
-- **Proven Track Record**: Powering over 2 million websites worldwide
-
-## Pro Features
-
-- **Repeater Field**: Create sets of sub-fields that can be repeated infinitely
-- **ACF Blocks**: PHP-based framework for developing custom block types for Gutenberg
-- **Flexible Content Field**: Create multiple layout and sub-field options
-- **Options Page**: Add custom admin pages to edit ACF fields
-- **Gallery Field**: Build fully customizable image galleries
-- **Clone Field**: Reuse existing fields and field groups efficiently
-
-## Requirements
-
-- WordPress 4.7 or higher
-- PHP 5.6 or higher
-- Tested up to WordPress 6.0.2
-
-## Installation
-
-1. Visit Plugins > Add New in your WordPress dashboard
-2. Search for "Advanced Custom Fields"
-3. Install and activate Advanced Custom Fields
-4. Click on the new menu item "Custom Fields" and create your first Custom Field Group!
-5. Read the [documentation](https://advancedcustomfields.com/resources/getting-started-with-acf/) to get started
+If you've got feedback or a feature suggestion for ACF, please use our [feedback board](https://www.advancedcustomfields.com/feedback/)
 
 ## Support
 
-- [Documentation](https://advancedcustomfields.com/resources/)
-- [Support Forums](https://support.advancedcustomfields.com/)
-- [Website](https://advancedcustomfields.com/)
+This repository is not suitable for support. Please don't use our issue tracker for support requests, but for core issues only. 
+Support can take place in the appropriate channels:
 
-## License
+* Community forum
+* Email based ticket system 
 
-This plugin is licensed under the GPL v2 or later.
+These channels can be accessed from our [support website](https://support.advancedcustomfields.com/).
 
-## Credits
+## Contributing
 
-Created by [Elliot Condon](https://elliotcondon.com/)
+If you have a patch, or stumbled upon an issue with ACF core, you can contribute this back to the code. Please create a new github issue with as much information as possible, and a PR if appropriate.
+
+## Translations
+
+If you're looking to translate ACF, you can submit new PRO translations via a PR on this repo. Any strings from the free version are imported from [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/advanced-custom-fields/stable/). For more information, please view our [translation guide](https://www.advancedcustomfields.com/resources/how-to-help-translate-acf-into-other-languages/)
